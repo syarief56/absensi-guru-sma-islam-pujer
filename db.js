@@ -12,6 +12,7 @@ function buatDbAwal() {
     absensi: [], // { id, guruId, tanggal, waktu, status, lat, lng, jarakMeter, mengajar: [{mapel, kelas, jam}] }
     nextAbsensiId: 1
   };
+  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
   fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
   return data;
 }

@@ -14,6 +14,9 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
+app.get("/favicon.ico", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "img", "logoskul.png"));
+});
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "rahasia-default-ganti-ini",
