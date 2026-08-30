@@ -5,3 +5,9 @@ channel = "stable-25_05"
 
 [agent]
 expertMode = true
+
+[userenv]
+
+[userenv.shared]
+SEKOLAH_LAT = "-7.9684323"
+SEKOLAH_LNG = "113.8791206"
