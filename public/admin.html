@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin - Rekap Absensi SMA Islam Pujer</title>
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="admin-body">
+
+<div class="login-wrap" id="area-login">
+  <div class="header" style="color:var(--hijau-tua);justify-content:center;">
+    
+    <div><h1 style="color:var(--hijau-tua);">Login Admin</h1><p style="color:var(--teks-lembut);">SMA Islam Pujer</p></div>
+  </div>
+  <div class="card">
+    <label for="password-admin">Password</label>
+    <input type="text" id="password-admin" placeholder="Masukkan password admin" />
+    <button class="btn-utama" id="btn-login">Masuk</button>
+    <div id="login-status"></div>
+  </div>
+</div>
+
+<div class="admin-wrap" id="area-admin" style="display:none;">
+  <div class="admin-header">
+    <div class="judul">
+      
+      <div>
+        <h1 style="margin:0;font-size:18px;color:var(--hijau-tua);">Rekap absensi guru</h1>
+        <p style="margin:0;font-size:12.5px;color:var(--teks-lembut);">SMA Islam Pujer</p>
+      </div>
+    </div>
+    <button class="btn-kecil" id="btn-logout">Keluar</button>
+  </div>
+
+  <div class="filter-bar">
+    <div>
+      <label>Dari tanggal</label>
+      <input type="date" id="filter-dari" />
+    </div>
+    <div>
+      <label>Sampai tanggal</label>
+      <input type="date" id="filter-sampai" />
+    </div>
+    <button class="btn-kecil" id="btn-filter">Terapkan</button>
+    <button class="btn-kecil" id="btn-export">Unduh CSV</button>
+  </div>
+
+  <div style="overflow-x:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>Tanggal</th>
+          <th>Waktu</th>
+          <th>Nama guru</th>
+          <th>Status</th>
+          <th>Jarak (m)</th>
+          <th>Mengajar</th>
+        </tr>
+      </thead>
+      <tbody id="tabel-rekap"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="js/admin.js"></script>
+</body>
+</html>
