@@ -1,7 +1,6 @@
 const fs = require("fs");
 const path = require("path");
 const { guruAwal, kelasAwal, jamAwal } = require("./seed-data");
-
 const DB_PATH = path.join(__dirname, "data", "db.json");
 
 function buatDbAwal() {
@@ -10,7 +9,7 @@ function buatDbAwal() {
     kelas: kelasAwal,
     jam: jamAwal,
     absensi: [], // { id, guruId, tanggal, waktu, status, lat, lng, jarakMeter, mengajar: [{mapel, kelas, jam}] }
-    nextAbsensiId: 1
+    nextAbsensiId: 1,
   };
   fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
   fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
@@ -29,4 +28,13 @@ function simpanDb(data) {
   fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
 }
 
-module.exports = { bacaDb, simpanDb };
+function getGuru() {
+  return guruAwal.map((g, i) => {
+    const mapel = g.bisaMengajar
+      ? [...g.mapel, "Piket", "Mengajar DA/DAS"]
+      : g.mapel;
+    return { id: i + 1, ...g, mapel };
+  });
+}
+
+module.exports = { bacaDb, simpanDb, getGuru };

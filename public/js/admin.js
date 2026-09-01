@@ -13,11 +13,12 @@ el("btn-login").addEventListener("click", async () => {
   const res = await fetch("/api/admin/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ password })
+    body: JSON.stringify({ password }),
   });
   const data = await res.json();
   if (!res.ok) {
-    el("login-status").innerHTML = `<div class="status-box gagal">${data.error}</div>`;
+    el("login-status").innerHTML =
+      `<div class="status-box gagal">${data.error}</div>`;
     return;
   }
   tampilkanAdmin();
@@ -47,9 +48,37 @@ el("btn-export").addEventListener("click", () => {
 
 function badgeStatus(status) {
   const kelas =
-    { Hadir: "badge-hadir", Izin: "badge-izin", Sakit: "badge-sakit", Alpa: "badge-alpa" }[status] ||
-    "badge-hadir";
+    {
+      Hadir: "badge-hadir",
+      Izin: "badge-izin",
+      Sakit: "badge-sakit",
+      Alpa: "badge-alpa",
+    }[status] || "badge-hadir";
   return `<span class="badge ${kelas}">${status}</span>`;
+}
+
+function kelompokkanPerTanggal(data) {
+  const grup = {};
+  data.forEach((a) => {
+    if (!grup[a.tanggal]) grup[a.tanggal] = [];
+    grup[a.tanggal].push(a);
+  });
+  return grup;
+}
+
+function barisRekap(a) {
+  const mengajarStr = a.mengajar.length
+    ? a.mengajar.map((m) => `${m.mapel} ${m.kelas} (jam ${m.jam})`).join(", ")
+    : "-";
+  return `<tr>
+    <td>${a.tanggal}</td>
+    <td>${a.waktu}</td>
+    <td>${a.namaGuru}</td>
+    <td>${badgeStatus(a.status)}</td>
+    <td>${a.jarakMeter}</td>
+    <td>${mengajarStr}</td>
+    <td><button class="btn-hapus" data-id="${a.id}">Hapus</button></td>
+  </tr>`;
 }
 
 async function muatRekap() {
@@ -62,25 +91,57 @@ async function muatRekap() {
   const res = await fetch("/api/admin/rekap?" + q.toString());
   const data = await res.json();
 
-  el("tabel-rekap").innerHTML = data.data
-    .map((a) => {
-      const mengajarStr = a.mengajar.length
-        ? a.mengajar.map((m) => `${m.mapel} ${m.kelas} (jam ${m.jam})`).join(", ")
-        : "-";
-      return `<tr>
-        <td>${a.tanggal}</td>
-        <td>${a.waktu}</td>
-        <td>${a.namaGuru}</td>
-        <td>${badgeStatus(a.status)}</td>
-        <td>${a.jarakMeter}</td>
-        <td>${mengajarStr}</td>
-      </tr>`;
+  const container = el("rekap-container");
+
+  if (data.data.length === 0) {
+    container.innerHTML =
+      '<div class="card" style="text-align:center;color:var(--teks-lembut);">Belum ada data</div>';
+    return;
+  }
+
+  const grup = kelompokkanPerTanggal(data.data);
+  const tanggalUrut = Object.keys(grup).sort().reverse();
+
+  container.innerHTML = tanggalUrut
+    .map((tgl) => {
+      const baris = grup[tgl].map(barisRekap).join("");
+      return `
+        <div class="card" style="margin-bottom:20px;">
+          <h3 style="margin:0 0 10px;color:var(--hijau-tua);">${tgl}</h3>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Waktu</th>
+                  <th>Nama guru</th>
+                  <th>Status</th>
+                  <th>Jarak (m)</th>
+                  <th>Mengajar</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>${baris}</tbody>
+            </table>
+          </div>
+        </div>
+      `;
     })
     .join("");
 
-  if (data.data.length === 0) {
-    el("tabel-rekap").innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--teks-lembut);">Belum ada data</td></tr>';
-  }
+  document.querySelectorAll(".btn-hapus").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Yakin mau hapus data absensi ini?")) return;
+      const res = await fetch("/api/admin/rekap/" + btn.dataset.id, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        muatRekap();
+      } else {
+        alert("Gagal menghapus data");
+      }
+    });
+  });
 }
 
 cekLogin();
