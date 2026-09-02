@@ -1,40 +1,116 @@
-const fs = require("fs");
-const path = require("path");
+const { createClient } = require("@supabase/supabase-js");
 const { guruAwal, kelasAwal, jamAwal } = require("./seed-data");
-const DB_PATH = path.join(__dirname, "data", "db.json");
 
-function buatDbAwal() {
-  const data = {
-    guru: guruAwal.map((g, i) => ({ id: i + 1, ...g })),
-    kelas: kelasAwal,
-    jam: jamAwal,
-    absensi: [], // { id, guruId, tanggal, waktu, status, lat, lng, jarakMeter, mengajar: [{mapel, kelas, jam}] }
-    nextAbsensiId: 1,
-  };
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-  return data;
+if (typeof globalThis.WebSocket === "undefined") {
+  globalThis.WebSocket = require("ws");
 }
 
-function bacaDb() {
-  if (!fs.existsSync(DB_PATH)) {
-    return buatDbAwal();
-  }
-  const raw = fs.readFileSync(DB_PATH, "utf-8");
-  return JSON.parse(raw);
-}
-
-function simpanDb(data) {
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-}
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 function getGuru() {
   return guruAwal.map((g, i) => {
-    const mapel = g.bisaMengajar
-      ? [...g.mapel, "Piket", "Mengajar DA/DAS"]
-      : g.mapel;
+    const mapel = g.bisaMengajar ? [...g.mapel, "Piket", "Mengajar DA/DAS"] : g.mapel;
     return { id: i + 1, ...g, mapel };
   });
 }
+function getKelas() {
+  return kelasAwal;
+}
+function getJam() {
+  return jamAwal;
+}
 
-module.exports = { bacaDb, simpanDb, getGuru };
+function fromRow(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    guruId: row.guru_id,
+    namaGuru: row.nama_guru,
+    tanggal: row.tanggal,
+    waktu: row.waktu,
+    status: row.status,
+    lat: row.lat,
+    lng: row.lng,
+    jarakMeter: row.jarak_meter,
+    mengajar: row.mengajar || []
+  };
+}
+
+async function cariAbsensiHariIni(guruId, tanggal) {
+  const { data, error } = await supabase
+    .from("absensi")
+    .select("*")
+    .eq("guru_id", guruId)
+    .eq("tanggal", tanggal)
+    .maybeSingle();
+  if (error) throw error;
+  return fromRow(data);
+}
+
+async function tambahAbsensi(record) {
+  const { data, error } = await supabase
+    .from("absensi")
+    .insert({
+      guru_id: record.guruId,
+      nama_guru: record.namaGuru,
+      tanggal: record.tanggal,
+      waktu: record.waktu,
+      status: record.status,
+      lat: record.lat,
+      lng: record.lng,
+      jarak_meter: record.jarakMeter,
+      mengajar: []
+    })
+    .select()
+    .single();
+  if (error) throw error;
+  return fromRow(data);
+}
+
+async function getAbsensiById(id) {
+  const { data, error } = await supabase.from("absensi").select("*").eq("id", id).maybeSingle();
+  if (error) throw error;
+  return fromRow(data);
+}
+
+async function tambahMengajar(absensiId, entry) {
+  const existing = await getAbsensiById(absensiId);
+  if (!existing) return null;
+  const mengajarBaru = [...existing.mengajar, entry];
+  const { data, error } = await supabase
+    .from("absensi")
+    .update({ mengajar: mengajarBaru })
+    .eq("id", absensiId)
+    .select()
+    .single();
+  if (error) throw error;
+  return fromRow(data);
+}
+
+async function getRekap(dari, sampai) {
+  let query = supabase.from("absensi").select("*");
+  if (dari) query = query.gte("tanggal", dari);
+  if (sampai) query = query.lte("tanggal", sampai);
+  query = query.order("tanggal", { ascending: false }).order("waktu", { ascending: false });
+  const { data, error } = await query;
+  if (error) throw error;
+  return (data || []).map(fromRow);
+}
+
+async function hapusAbsensi(id) {
+  const { error } = await supabase.from("absensi").delete().eq("id", id);
+  if (error) throw error;
+  return true;
+}
+
+module.exports = {
+  getGuru,
+  getKelas,
+  getJam,
+  cariAbsensiHariIni,
+  tambahAbsensi,
+  getAbsensiById,
+  tambahMengajar,
+  getRekap,
+  hapusAbsensi
+};

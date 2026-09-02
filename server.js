@@ -2,8 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const session = require("express-session");
 const path = require("path");
-// SESUDAH — tambahkan getGuru
-const { bacaDb, simpanDb, getGuru } = require("./db");
+const { bacaDb, simpanDb, getGuru, hapusAbsensi } = require("./db");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -23,8 +22,8 @@ app.use(
     secret: process.env.SESSION_SECRET || "rahasia-default-ganti-ini",
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 * 8 }, // 8 jam
-  }),
+    cookie: { maxAge: 1000 * 60 * 60 * 8 } // 8 jam
+  })
 );
 
 // ---------- Util ----------
@@ -71,23 +70,23 @@ function wajibAdmin(req, res, next) {
 
 // ---------- API untuk halaman absen ----------
 
-// SESUDAH — pakai getGuru() supaya mapel Piket & Mengajar DA/DAS ikut
+// Daftar guru (untuk dropdown pilih nama) + info sekolah dasar
 app.get("/api/guru", (req, res) => {
   const db = bacaDb();
-  const daftarGuru = getGuru(); // <-- ganti sumbernya
+  const daftarGuru = getGuru();
   const daftar = daftarGuru.map((g) => ({
     id: g.id,
     nama: g.nama,
     jabatan: g.jabatan,
     mapel: g.mapel,
-    bisaMengajar: g.bisaMengajar,
+    bisaMengajar: g.bisaMengajar
   }));
   res.json({
     guru: daftar,
     kelas: db.kelas,
     jam: db.jam,
     hariMinggu: hariIniMinggu(),
-    tanggalHariIni: tanggalHariIni(),
+    tanggalHariIni: tanggalHariIni()
   });
 });
 
@@ -96,17 +95,13 @@ app.post("/api/absen", (req, res) => {
   const { guruId, status, lat, lng } = req.body;
 
   if (hariIniMinggu()) {
-    return res
-      .status(400)
-      .json({ error: "Absensi tidak dibuka pada hari Minggu" });
+    return res.status(400).json({ error: "Absensi tidak dibuka pada hari Minggu" });
   }
   if (!guruId || !status) {
     return res.status(400).json({ error: "Data belum lengkap" });
   }
   if (typeof lat !== "number" || typeof lng !== "number") {
-    return res
-      .status(400)
-      .json({ error: "Lokasi tidak terdeteksi. Aktifkan GPS/lokasi." });
+    return res.status(400).json({ error: "Lokasi tidak terdeteksi. Aktifkan GPS/lokasi." });
   }
 
   const jarak = hitungJarakMeter(SEKOLAH_LAT, SEKOLAH_LNG, lat, lng);
@@ -117,19 +112,14 @@ app.post("/api/absen", (req, res) => {
   //   });
   // }
 
-  // SESUDAH
   const db = bacaDb();
   const guru = getGuru().find((g) => g.id === guruId);
   if (!guru) return res.status(404).json({ error: "Guru tidak ditemukan" });
 
   const tanggal = tanggalHariIni();
-  const sudahAbsen = db.absensi.find(
-    (a) => a.guruId === guruId && a.tanggal === tanggal,
-  );
+  const sudahAbsen = db.absensi.find((a) => a.guruId === guruId && a.tanggal === tanggal);
   if (sudahAbsen) {
-    return res
-      .status(409)
-      .json({ error: "Kamu sudah absen hari ini", absensiId: sudahAbsen.id });
+    return res.status(409).json({ error: "Kamu sudah absen hari ini", absensiId: sudahAbsen.id });
   }
 
   const record = {
@@ -142,7 +132,7 @@ app.post("/api/absen", (req, res) => {
     lat,
     lng,
     jarakMeter: Math.round(jarak),
-    mengajar: [],
+    mengajar: []
   };
   db.absensi.push(record);
   simpanDb(db);
@@ -153,7 +143,7 @@ app.post("/api/absen", (req, res) => {
     bisaMengajar: guru.bisaMengajar,
     mapelGuru: guru.mapel,
     kelas: db.kelas,
-    jam: db.jam,
+    jam: db.jam
   });
 });
 
@@ -165,10 +155,7 @@ app.post("/api/absen-mengajar", (req, res) => {
   }
   const db = bacaDb();
   const absensi = db.absensi.find((a) => a.id === absensiId);
-  if (!absensi)
-    return res
-      .status(404)
-      .json({ error: "Data absen kehadiran tidak ditemukan" });
+  if (!absensi) return res.status(404).json({ error: "Data absen kehadiran tidak ditemukan" });
 
   absensi.mengajar.push({ mapel, kelas, jam, waktu: waktuSekarang() });
   simpanDb(db);
@@ -201,10 +188,17 @@ app.get("/api/admin/rekap", wajibAdmin, (req, res) => {
   const { dari, sampai } = req.query;
   if (dari) data = data.filter((a) => a.tanggal >= dari);
   if (sampai) data = data.filter((a) => a.tanggal <= sampai);
-  data = [...data].sort((a, b) =>
-    a.tanggal + a.waktu < b.tanggal + b.waktu ? 1 : -1,
-  );
+  data = [...data].sort((a, b) => (a.tanggal + a.waktu < b.tanggal + b.waktu ? 1 : -1));
   res.json({ data, guru: db.guru });
+});
+
+// Hapus 1 data absensi
+app.delete("/api/admin/rekap/:id", wajibAdmin, (req, res) => {
+  const berhasil = hapusAbsensi(req.params.id);
+  if (!berhasil) {
+    return res.status(404).json({ error: "Data absensi tidak ditemukan" });
+  }
+  res.json({ ok: true });
 });
 
 // Export CSV rekap
@@ -217,26 +211,14 @@ app.get("/api/admin/export-csv", wajibAdmin, (req, res) => {
 
   const baris = ["Tanggal,Waktu,Nama Guru,Status,Jarak (m),Mapel Diajar"];
   data.forEach((a) => {
-    const mapelStr = a.mengajar
-      .map((m) => `${m.mapel} ${m.kelas} (${m.jam})`)
-      .join(" | ");
+    const mapelStr = a.mengajar.map((m) => `${m.mapel} ${m.kelas} (${m.jam})`).join(" | ");
     baris.push(
-      [
-        a.tanggal,
-        a.waktu,
-        `"${a.namaGuru}"`,
-        a.status,
-        a.jarakMeter,
-        `"${mapelStr}"`,
-      ].join(","),
+      [a.tanggal, a.waktu, `"${a.namaGuru}"`, a.status, a.jarakMeter, `"${mapelStr}"`].join(",")
     );
   });
 
   res.setHeader("Content-Type", "text/csv");
-  res.setHeader(
-    "Content-Disposition",
-    "attachment; filename=rekap-absensi.csv",
-  );
+  res.setHeader("Content-Disposition", "attachment; filename=rekap-absensi.csv");
   res.send(baris.join("\n"));
 });
 
