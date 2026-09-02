@@ -6,6 +6,18 @@ let daftarMengajarTampil = [];
 
 const el = (id) => document.getElementById(id);
 
+function hitungJarakMeter(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const toRad = (deg) => (deg * Math.PI) / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 async function muatData() {
   const res = await fetch("/api/guru");
   dataAwal = await res.json();
@@ -35,7 +47,19 @@ el("btn-cek-lokasi").addEventListener("click", () => {
 
   navigator.geolocation.getCurrentPosition(
     (pos) => {
-      lokasiSaya = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const jarak = hitungJarakMeter(dataAwal.sekolahLat, dataAwal.sekolahLng, lat, lng);
+
+      if (jarak > dataAwal.radiusMeter) {
+        box.className = "status-box gagal";
+        box.textContent = `Kamu berada ${Math.round(jarak)} m dari sekolah. Absen hanya bisa dilakukan dalam radius ${dataAwal.radiusMeter} m.`;
+        el("kartu-kehadiran").style.display = "none";
+        lokasiSaya = null;
+        return;
+      }
+
+      lokasiSaya = { lat, lng };
       box.className = "status-box sukses";
       box.textContent = "Lokasi berhasil dideteksi. Silakan lanjut isi absensi.";
       el("kartu-kehadiran").style.display = "block";
