@@ -1,89 +1,99 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Absensi Guru - SMA Islam Pujer</title>
-<link rel="icon" href="img/logoskul.png" />
-<link rel="stylesheet" href="css/style.css" />
-</head>
-<body>
-<div class="container">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Absensi Guru - SMA Islam Pujer</title>
+    <link rel="icon" href="img/logoskul.png" />
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <div>
+          <h1>SMA Islam Pujer</h1>
+          <p>Absensi kehadiran &amp; mengajar guru</p>
+        </div>
+      </div>
 
-  <div class="header">
-    
-    <div>
-      <h1>SMA Islam Pujer</h1>
-      <p>Absensi kehadiran &amp; mengajar guru</p>
+      <!-- Langkah 1: cek lokasi -->
+      <div class="card" id="kartu-lokasi">
+        <h2>1. Verifikasi lokasi</h2>
+        <p
+          style="font-size: 13.5px; color: var(--teks-lembut); margin: 0 0 4px"
+        >
+          Aktifkan lokasi/GPS di HP kamu, lalu tekan tombol di bawah untuk
+          memastikan kamu sedang berada di area sekolah.
+        </p>
+        <div id="lokasi-status" class="status-box info">Lokasi belum dicek</div>
+        <button class="btn-utama" id="btn-cek-lokasi">Cek lokasi saya</button>
+      </div>
+
+      <!-- Langkah 2: absen kehadiran -->
+      <div class="card" id="kartu-kehadiran" style="display: none">
+        <h2>2. Absen kehadiran</h2>
+
+        <label for="pilih-guru">Nama guru</label>
+        <select id="pilih-guru"></select>
+
+        <label>Status kehadiran</label>
+        <div class="pilihan-grid" id="pilihan-status">
+          <div class="pilihan-btn status-hadir" data-status="Hadir">Hadir</div>
+          <div class="pilihan-btn status-izin" data-status="Izin">Izin</div>
+          <div class="pilihan-btn status-sakit" data-status="Sakit">Sakit</div>
+          <div class="pilihan-btn status-alpa" data-status="Alpa">Alpa</div>
+        </div>
+
+        <button class="btn-utama" id="btn-absen" disabled>Kirim absensi</button>
+        <div id="absen-status"></div>
+      </div>
+
+      <!-- Langkah 3: absen mengajar -->
+      <div class="card" id="kartu-mengajar" style="display: none">
+        <h2>3. Absen mengajar hari ini</h2>
+        <p style="font-size: 13px; color: var(--teks-lembut); margin: 0 0 4px">
+          Isi kalau kamu mengajar hari ini. Bisa diisi lebih dari satu kali
+          kalau mengajar beberapa kelas/jam.
+        </p>
+
+        <label for="pilih-mapel">Mata pelajaran</label>
+        <select id="pilih-mapel"></select>
+
+        <div id="grup-kelas">
+          <label for="pilih-kelas">Kelas</label>
+          <select id="pilih-kelas"></select>
+        </div>
+
+        <div id="grup-jam">
+          <label for="pilih-jam">Jam ke</label>
+          <select id="pilih-jam"></select>
+        </div>
+
+        <button class="btn-utama" id="btn-tambah-mengajar">
+          Tambah data mengajar
+        </button>
+
+        <div id="daftar-mengajar" style="margin-top: 12px"></div>
+
+        <button class="btn-sekunder" id="btn-selesai">Selesai</button>
+      </div>
+
+      <!-- Selesai -->
+      <div class="card" id="kartu-selesai" style="display: none">
+        <h2>Absensi tersimpan</h2>
+        <div class="status-box sukses">
+          Terima kasih, data kamu sudah tercatat hari ini.
+        </div>
+        <div class="ringkasan" id="ringkasan-akhir"></div>
+      </div>
+
+      <p class="footer-note">
+        Absensi hanya bisa dilakukan di area sekolah dan sekali per hari.<br />
+        Hari Minggu absensi tidak dibuka.
+      </p>
+      <a href="admin.html" class="link-admin">Login admin / kepala sekolah</a>
     </div>
-  </div>
 
-  <!-- Langkah 1: cek lokasi -->
-  <div class="card" id="kartu-lokasi">
-    <h2>1. Verifikasi lokasi</h2>
-    <p style="font-size:13.5px;color:var(--teks-lembut);margin:0 0 4px;">
-      Aktifkan lokasi/GPS di HP kamu, lalu tekan tombol di bawah untuk memastikan kamu sedang berada di area sekolah.
-    </p>
-    <div id="lokasi-status" class="status-box info">Lokasi belum dicek</div>
-    <button class="btn-utama" id="btn-cek-lokasi">Cek lokasi saya</button>
-  </div>
-
-  <!-- Langkah 2: absen kehadiran -->
-  <div class="card" id="kartu-kehadiran" style="display:none;">
-    <h2>2. Absen kehadiran</h2>
-
-    <label for="pilih-guru">Nama guru</label>
-    <select id="pilih-guru"></select>
-
-    <label>Status kehadiran</label>
-    <div class="pilihan-grid" id="pilihan-status">
-      <div class="pilihan-btn status-hadir" data-status="Hadir">Hadir</div>
-      <div class="pilihan-btn status-izin" data-status="Izin">Izin</div>
-      <div class="pilihan-btn status-sakit" data-status="Sakit">Sakit</div>
-      <div class="pilihan-btn status-alpa" data-status="Alpa">Alpa</div>
-    </div>
-
-    <button class="btn-utama" id="btn-absen" disabled>Kirim absensi</button>
-    <div id="absen-status"></div>
-  </div>
-
-  <!-- Langkah 3: absen mengajar -->
-  <div class="card" id="kartu-mengajar" style="display:none;">
-    <h2>3. Absen mengajar hari ini</h2>
-    <p style="font-size:13px;color:var(--teks-lembut);margin:0 0 4px;">
-      Isi kalau kamu mengajar hari ini. Bisa diisi lebih dari satu kali kalau mengajar beberapa kelas/jam.
-    </p>
-
-    <label for="pilih-mapel">Mata pelajaran</label>
-    <select id="pilih-mapel"></select>
-
-    <label for="pilih-kelas">Kelas</label>
-    <select id="pilih-kelas"></select>
-
-    <label for="pilih-jam">Jam ke</label>
-    <select id="pilih-jam"></select>
-
-    <button class="btn-utama" id="btn-tambah-mengajar">Tambah data mengajar</button>
-
-    <div id="daftar-mengajar" style="margin-top:12px;"></div>
-
-    <button class="btn-sekunder" id="btn-selesai">Selesai</button>
-  </div>
-
-  <!-- Selesai -->
-  <div class="card" id="kartu-selesai" style="display:none;">
-    <h2>Absensi tersimpan</h2>
-    <div class="status-box sukses">Terima kasih, data kamu sudah tercatat hari ini.</div>
-    <div class="ringkasan" id="ringkasan-akhir"></div>
-  </div>
-
-  <p class="footer-note">
-    Absensi hanya bisa dilakukan di area sekolah dan sekali per hari.<br/>
-    Hari Minggu absensi tidak dibuka.
-  </p>
-  <a href="admin.html" class="link-admin">Login admin / kepala sekolah</a>
-</div>
-
-<script src="js/absen.js"></script>
-</body>
+    <script src="js/absen.js"></script>
+  </body>
 </html>

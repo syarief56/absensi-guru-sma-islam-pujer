@@ -11,74 +11,74 @@ const guruAwal = [
     nama: "Hesti Nurhayati, S.Si",
     jabatan: "Kepala Sekolah",
     mapel: [],
-    bisaMengajar: false
+    bisaMengajar: false,
   },
   {
     nama: "Sulastri, S.Pd",
     jabatan: "Guru",
-    mapel: ["Bahasa Inggris", KOKURIKULER],
-    bisaMengajar: true
+    mapel: ["Bahasa Inggris", "Bahasa Mandarin", KOKURIKULER],
+    bisaMengajar: true,
   },
   {
     nama: "Lintang Ika Safitri, S.Pd",
     jabatan: "Guru",
     mapel: ["Penjas Orkes", KOKURIKULER],
-    bisaMengajar: true
+    bisaMengajar: true,
   },
   {
     nama: "Dicky Ramadhan, S.Pd",
     jabatan: "Guru",
     mapel: ["Bahasa Indonesia", KOKURIKULER],
-    bisaMengajar: true
+    bisaMengajar: true,
   },
   {
     nama: "Muhammad Sulis, S.Pd",
     jabatan: "Guru",
     mapel: ["PPKn", "PABP", KOKURIKULER],
-    bisaMengajar: true
+    bisaMengajar: true,
   },
   {
     nama: "Dewiyatul Hasanah, S.Pd",
     jabatan: "Guru",
     mapel: ["Geografi", "Sosiologi", KOKURIKULER],
-    bisaMengajar: true
+    bisaMengajar: true,
   },
   {
     nama: "Rofiqoh, S.Si",
     jabatan: "Guru",
-    mapel: ["IPA", "Biologi", "Bahasa Arab", KOKURIKULER],
-    bisaMengajar: true
+    mapel: ["IPA", "Biologi", "Bahasa Arab", "BTQ", KOKURIKULER],
+    bisaMengajar: true,
   },
   {
     nama: "Mochammad Falik Dhoirobi",
     jabatan: "Guru",
     mapel: ["TIK", "Bahasa Arab", "Desain Grafis", KOKURIKULER],
-    bisaMengajar: true
+    bisaMengajar: true,
   },
   {
     nama: "Istianah",
     jabatan: "Guru",
     mapel: ["Ekonomi", "PKWU", KOKURIKULER],
-    bisaMengajar: true
+    bisaMengajar: true,
   },
   {
     nama: "Erviyan Wahyu Permana, S.Pd",
     jabatan: "Guru",
     mapel: ["Matematika", "Seni Budaya", KOKURIKULER],
-    bisaMengajar: true
+    bisaMengajar: true,
   },
   {
     nama: "Ilmiatin Hasanah, S.Sos",
     jabatan: "Guru",
     mapel: ["Sejarah", KOKURIKULER],
-    bisaMengajar: true
+    bisaMengajar: true,
   },
   {
     nama: "Marzuki, S.Pd",
     jabatan: "Tata Usaha",
     mapel: [],
-    bisaMengajar: false
-  }
+    bisaMengajar: false,
+  },
 ];
 
 const kelasAwal = ["X", "XI", "XII"];
