@@ -112,12 +112,11 @@ app.post("/api/absen", async (req, res) => {
     }
 
     const jarak = hitungJarakMeter(SEKOLAH_LAT, SEKOLAH_LNG, lat, lng);
-    // --- SEMENTARA DIMATIKAN UNTUK TESTING ---
-    // if (jarak > RADIUS_METER) {
-    //   return res.status(403).json({
-    //     error: `Kamu berada ${Math.round(jarak)} m dari sekolah. Absen hanya bisa dilakukan dalam radius ${RADIUS_METER} m.`
-    //   });
-    // }
+    if (jarak > RADIUS_METER) {
+      return res.status(403).json({
+        error: `Kamu berada ${Math.round(jarak)} m dari sekolah. Absen hanya bisa dilakukan dalam radius ${RADIUS_METER} m.`,
+      });
+    }
 
     const guru = getGuru().find((g) => g.id === guruId);
     if (!guru) return res.status(404).json({ error: "Guru tidak ditemukan" });
