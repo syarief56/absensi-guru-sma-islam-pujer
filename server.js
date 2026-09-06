@@ -89,6 +89,9 @@ app.get("/api/guru", (req, res) => {
     jam: getJam(),
     hariMinggu: hariIniMinggu(),
     tanggalHariIni: tanggalHariIni(),
+    sekolahLat: SEKOLAH_LAT,
+    sekolahLng: SEKOLAH_LNG,
+    radiusMeter: RADIUS_METER,
   });
 });
 
