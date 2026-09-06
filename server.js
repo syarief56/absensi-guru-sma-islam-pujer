@@ -63,7 +63,9 @@ function waktuSekarang() {
 }
 
 function hariIniMinggu() {
-  return false;
+  const d = new Date();
+  const tz = new Date(d.getTime() + 7 * 60 * 60 * 1000);
+  return tz.getUTCDay() === 0; // 0 = Minggu
 }
 
 function wajibAdmin(req, res, next) {
@@ -87,9 +89,6 @@ app.get("/api/guru", (req, res) => {
     jam: getJam(),
     hariMinggu: hariIniMinggu(),
     tanggalHariIni: tanggalHariIni(),
-    sekolahLat: SEKOLAH_LAT,
-    sekolahLng: SEKOLAH_LNG,
-    radiusMeter: RADIUS_METER,
   });
 });
 
@@ -109,6 +108,19 @@ app.post("/api/absen", async (req, res) => {
       return res
         .status(400)
         .json({ error: "Lokasi tidak terdeteksi. Aktifkan GPS/lokasi." });
+    }
+    if (isNaN(SEKOLAH_LAT) || isNaN(SEKOLAH_LNG)) {
+      console.error(
+        "SEKOLAH_LAT/SEKOLAH_LNG tidak valid:",
+        process.env.SEKOLAH_LAT,
+        process.env.SEKOLAH_LNG,
+      );
+      return res
+        .status(500)
+        .json({
+          error:
+            "Koordinat sekolah belum diatur dengan benar di server (cek Secrets).",
+        });
     }
 
     const jarak = hitungJarakMeter(SEKOLAH_LAT, SEKOLAH_LNG, lat, lng);
