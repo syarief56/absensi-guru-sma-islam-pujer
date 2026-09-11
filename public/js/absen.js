@@ -56,15 +56,20 @@ el("btn-cek-lokasi").addEventListener("click", () => {
     (pos) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
-          const jarak = hitungJarakMeter(dataAwal.sekolahLat, dataAwal.sekolahLng, lat, lng);
+      const jarak = hitungJarakMeter(
+        dataAwal.sekolahLat,
+        dataAwal.sekolahLng,
+        lat,
+        lng,
+      );
 
-          // if (jarak > dataAwal.radiusMeter) {
-          //   box.className = "status-box gagal";
-          //   box.textContent = `Kamu berada ${Math.round(jarak)} m dari sekolah. Absen hanya bisa dilakukan dalam radius ${dataAwal.radiusMeter} m.`;
-          //   el("kartu-kehadiran").style.display = "none";
-          //   lokasiSaya = null;
-          //   return;
-          // };
+      if (jarak > dataAwal.radiusMeter) {
+        box.className = "status-box gagal";
+        box.textContent = `Kamu berada ${Math.round(jarak)} m dari sekolah. Absen hanya bisa dilakukan dalam radius ${dataAwal.radiusMeter} m.`;
+        el("kartu-kehadiran").style.display = "none";
+        lokasiSaya = null;
+        return;
+      }
       lokasiSaya = { lat, lng };
       box.className = "status-box sukses";
       box.textContent =
