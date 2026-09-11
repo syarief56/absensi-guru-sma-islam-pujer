@@ -5,11 +5,16 @@ if (typeof globalThis.WebSocket === "undefined") {
   globalThis.WebSocket = require("ws");
 }
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_KEY,
+);
 
 function getGuru() {
   return guruAwal.map((g, i) => {
-    const mapel = g.bisaMengajar ? [...g.mapel, "Piket", "Mengajar DA/DAS"] : g.mapel;
+    const mapel = g.bisaMengajar
+      ? [...g.mapel, "Piket", "Mengajar DA/DAS"]
+      : g.mapel;
     return { id: i + 1, ...g, mapel };
   });
 }
@@ -32,7 +37,9 @@ function fromRow(row) {
     lat: row.lat,
     lng: row.lng,
     jarakMeter: row.jarak_meter,
-    mengajar: row.mengajar || []
+    mengajar: row.mengajar || [],
+    tujuanDinas: row.tujuan_dinas || null,
+    keperluanDinas: row.keperluan_dinas || null,
   };
 }
 
@@ -59,7 +66,9 @@ async function tambahAbsensi(record) {
       lat: record.lat,
       lng: record.lng,
       jarak_meter: record.jarakMeter,
-      mengajar: []
+      mengajar: [],
+      tujuan_dinas: record.tujuanDinas || null,
+      keperluan_dinas: record.keperluanDinas || null,
     })
     .select()
     .single();
@@ -68,7 +77,11 @@ async function tambahAbsensi(record) {
 }
 
 async function getAbsensiById(id) {
-  const { data, error } = await supabase.from("absensi").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("absensi")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw error;
   return fromRow(data);
 }
@@ -91,7 +104,9 @@ async function getRekap(dari, sampai) {
   let query = supabase.from("absensi").select("*");
   if (dari) query = query.gte("tanggal", dari);
   if (sampai) query = query.lte("tanggal", sampai);
-  query = query.order("tanggal", { ascending: false }).order("waktu", { ascending: false });
+  query = query
+    .order("tanggal", { ascending: false })
+    .order("waktu", { ascending: false });
   const { data, error } = await query;
   if (error) throw error;
   return (data || []).map(fromRow);
@@ -112,5 +127,5 @@ module.exports = {
   getAbsensiById,
   tambahMengajar,
   getRekap,
-  hapusAbsensi
+  hapusAbsensi,
 };

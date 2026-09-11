@@ -97,7 +97,7 @@ app.get("/api/guru", (req, res) => {
 
 app.post("/api/absen", async (req, res) => {
   try {
-    const { guruId, status, lat, lng } = req.body;
+    const { guruId, status, lat, lng, tujuanDinas, keperluanDinas } = req.body;
 
     if (hariIniMinggu()) {
       return res
@@ -118,20 +118,18 @@ app.post("/api/absen", async (req, res) => {
         process.env.SEKOLAH_LAT,
         process.env.SEKOLAH_LNG,
       );
-      return res
-        .status(500)
-        .json({
-          error:
-            "Koordinat sekolah belum diatur dengan benar di server (cek Secrets).",
-        });
+      return res.status(500).json({
+        error:
+          "Koordinat sekolah belum diatur dengan benar di server (cek Secrets).",
+      });
     }
 
     const jarak = hitungJarakMeter(SEKOLAH_LAT, SEKOLAH_LNG, lat, lng);
-    if (jarak > RADIUS_METER) {
-      return res.status(403).json({
-        error: `Kamu berada ${Math.round(jarak)} m dari sekolah. Absen hanya bisa dilakukan dalam radius ${RADIUS_METER} m.`,
-      });
-    }
+    // if (jarak > RADIUS_METER) {
+    //   return res.status(403).json({
+    //     error: `Kamu berada ${Math.round(jarak)} m dari sekolah. Absen hanya bisa dilakukan dalam radius ${RADIUS_METER} m.`
+    //   });
+    // }
 
     const guru = getGuru().find((g) => g.id === guruId);
     if (!guru) return res.status(404).json({ error: "Guru tidak ditemukan" });
@@ -153,6 +151,8 @@ app.post("/api/absen", async (req, res) => {
       lat,
       lng,
       jarakMeter: Math.round(jarak),
+      tujuanDinas,
+      keperluanDinas,
     });
 
     res.json({
