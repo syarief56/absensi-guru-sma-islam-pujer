@@ -3,11 +3,10 @@ let lokasiSaya = null;
 let statusTerpilih = null;
 let absensiIdAktif = null;
 let daftarMengajarTampil = [];
-
-const MAPEL_TANPA_KELAS = ["BTQ", "Kokurikuler", "Desain Grafis"];
-const MAPEL_TANPA_KELAS_DAN_JAM = ["Piket"];
+let tipeTambahanAktif = "mengajar";
 
 const el = (id) => document.getElementById(id);
+
 function hitungJarakMeter(lat1, lng1, lat2, lng2) {
   const R = 6371000;
   const toRad = (deg) => (deg * Math.PI) / 180;
@@ -70,6 +69,7 @@ el("btn-cek-lokasi").addEventListener("click", () => {
         lokasiSaya = null;
         return;
       }
+
       lokasiSaya = { lat, lng };
       box.className = "status-box sukses";
       box.textContent =
@@ -85,42 +85,22 @@ el("btn-cek-lokasi").addEventListener("click", () => {
   );
 });
 
-document.querySelectorAll(".pilihan-btn").forEach((btn) => {
+document.querySelectorAll("#pilihan-status .pilihan-btn").forEach((btn) => {
   btn.addEventListener("click", () => {
     document
-      .querySelectorAll(".pilihan-btn")
+      .querySelectorAll("#pilihan-status .pilihan-btn")
       .forEach((b) => b.classList.remove("aktif"));
     btn.classList.add("aktif");
     statusTerpilih = btn.dataset.status;
-
-    if (statusTerpilih === "Dinas Luar") {
-      el("grup-dinas").style.display = "block";
-    } else {
-      el("grup-dinas").style.display = "none";
-      el("input-tujuan-dinas").value = "";
-      el("input-keperluan-dinas").value = "";
-    }
-
     cekTombolAbsenAktif();
   });
 });
-
-el("input-tujuan-dinas").addEventListener("input", cekTombolAbsenAktif);
-el("input-keperluan-dinas").addEventListener("input", cekTombolAbsenAktif);
 
 el("pilih-guru").addEventListener("change", cekTombolAbsenAktif);
 
 function cekTombolAbsenAktif() {
   const guruId = el("pilih-guru").value;
-  let syaratLengkap = guruId && statusTerpilih && lokasiSaya;
-
-  if (statusTerpilih === "Dinas Luar") {
-    const tujuan = el("input-tujuan-dinas").value.trim();
-    const keperluan = el("input-keperluan-dinas").value.trim();
-    syaratLengkap = syaratLengkap && tujuan && keperluan;
-  }
-
-  el("btn-absen").disabled = !syaratLengkap;
+  el("btn-absen").disabled = !(guruId && statusTerpilih && lokasiSaya);
 }
 
 el("btn-absen").addEventListener("click", async () => {
@@ -139,14 +119,6 @@ el("btn-absen").addEventListener("click", async () => {
         status: statusTerpilih,
         lat: lokasiSaya.lat,
         lng: lokasiSaya.lng,
-        tujuanDinas:
-          statusTerpilih === "Dinas Luar"
-            ? el("input-tujuan-dinas").value.trim()
-            : null,
-        keperluanDinas:
-          statusTerpilih === "Dinas Luar"
-            ? el("input-keperluan-dinas").value.trim()
-            : null,
       }),
     });
     const data = await res.json();
@@ -184,51 +156,77 @@ function siapkanFormMengajar(mapelGuru, kelas, jam) {
   el("pilih-jam").innerHTML = jam
     .map((j) => `<option value="${j}">${j}</option>`)
     .join("");
-  perbaruiTampilanMengajar();
 }
 
-el("pilih-mapel").addEventListener("change", perbaruiTampilanMengajar);
+document
+  .querySelectorAll("#pilihan-tipe-tambahan .pilihan-btn")
+  .forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document
+        .querySelectorAll("#pilihan-tipe-tambahan .pilihan-btn")
+        .forEach((b) => b.classList.remove("aktif"));
+      btn.classList.add("aktif");
+      tipeTambahanAktif = btn.dataset.tipe;
 
-function perbaruiTampilanMengajar() {
-  const mapel = el("pilih-mapel").value;
-  const tanpaJam = MAPEL_TANPA_KELAS_DAN_JAM.includes(mapel);
-  const tanpaKelas = tanpaJam || MAPEL_TANPA_KELAS.includes(mapel);
-
-  el("grup-kelas").style.display = tanpaKelas ? "none" : "block";
-  el("grup-jam").style.display = tanpaJam ? "none" : "block";
-}
+      if (tipeTambahanAktif === "mengajar") {
+        el("grup-mengajar").style.display = "block";
+        el("grup-dinas").style.display = "none";
+      } else {
+        el("grup-mengajar").style.display = "none";
+        el("grup-dinas").style.display = "block";
+      }
+    });
+  });
 
 el("btn-tambah-mengajar").addEventListener("click", async () => {
-  const mapel = el("pilih-mapel").value;
-  const tanpaJam = MAPEL_TANPA_KELAS_DAN_JAM.includes(mapel);
-  const tanpaKelas = tanpaJam || MAPEL_TANPA_KELAS.includes(mapel);
-  const kelas = tanpaKelas ? "-" : el("pilih-kelas").value;
-  const jam = tanpaJam ? "-" : el("pilih-jam").value;
+  let body = { absensiId: absensiIdAktif, tipe: tipeTambahanAktif };
+
+  if (tipeTambahanAktif === "mengajar") {
+    const mapel = el("pilih-mapel").value;
+    const kelas = el("pilih-kelas").value;
+    const jam = el("pilih-jam").value;
+    if (!mapel || !kelas || !jam) {
+      alert("Lengkapi mapel, kelas, dan jam dulu");
+      return;
+    }
+    body = { ...body, mapel, kelas, jam };
+  } else {
+    const tujuan = el("input-tujuan-dinas").value.trim();
+    const keperluan = el("input-keperluan-dinas").value.trim();
+    if (!tujuan || !keperluan) {
+      alert("Isi tujuan dan keperluan dinas dulu");
+      return;
+    }
+    body = { ...body, tujuan, keperluan };
+  }
 
   const res = await fetch("/api/absen-mengajar", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ absensiId: absensiIdAktif, mapel, kelas, jam }),
+    body: JSON.stringify(body),
   });
   const data = await res.json();
   if (!res.ok) {
-    alert(data.error || "Gagal menyimpan data mengajar");
+    alert(data.error || "Gagal menyimpan data");
     return;
   }
   daftarMengajarTampil = data.mengajar;
   renderDaftarMengajar();
-});
 
-function formatMengajar(m) {
-  let teks = m.mapel;
-  if (m.kelas !== "-") teks += ` &middot; ${m.kelas}`;
-  if (m.jam !== "-") teks += ` &middot; jam ${m.jam}`;
-  return teks;
-}
+  if (tipeTambahanAktif === "dinas") {
+    el("input-tujuan-dinas").value = "";
+    el("input-keperluan-dinas").value = "";
+  }
+});
 
 function renderDaftarMengajar() {
   el("daftar-mengajar").innerHTML = daftarMengajarTampil
-    .map((m) => `<span class="tag-mengajar">${formatMengajar(m)}</span>`)
+    .map((m) => {
+      if (m.tipe === "dinas") {
+        return `<span class="tag-mengajar">Dinas &middot; ${m.tujuan} &middot; ${m.keperluan}</span>`;
+      }
+      return `<span class="tag-mengajar">${m.mapel} &middot; ${m.kelas} &middot; jam ${m.jam}</span>`;
+    })
     .join("");
 }
 
@@ -246,8 +244,14 @@ function tampilkanSelesai() {
   let ringkasan = `<b>Nama:</b> ${namaGuru}<br/><b>Status:</b> ${statusTerpilih}`;
   if (daftarMengajarTampil.length > 0) {
     ringkasan +=
-      `<br/><b>Mengajar:</b><br/>` +
-      daftarMengajarTampil.map((m) => `- ${formatMengajar(m)}`).join("<br/>");
+      `<br/><b>Data tambahan:</b><br/>` +
+      daftarMengajarTampil
+        .map((m) =>
+          m.tipe === "dinas"
+            ? `- Dinas: ${m.tujuan} (${m.keperluan})`
+            : `- ${m.mapel} kelas ${m.kelas} jam ${m.jam}`,
+        )
+        .join("<br/>");
   }
   el("ringkasan-akhir").innerHTML = ringkasan;
 }

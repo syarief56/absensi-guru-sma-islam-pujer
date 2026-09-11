@@ -171,24 +171,32 @@ app.post("/api/absen", async (req, res) => {
 
 app.post("/api/absen-mengajar", async (req, res) => {
   try {
-    const { absensiId, mapel, kelas, jam } = req.body;
-    if (!absensiId || !mapel || !kelas || !jam) {
-      return res.status(400).json({ error: "Data mengajar belum lengkap" });
+    const { absensiId, tipe, mapel, kelas, jam, tujuan, keperluan } = req.body;
+    if (!absensiId || !tipe) {
+      return res.status(400).json({ error: "Data belum lengkap" });
     }
-    const hasil = await tambahMengajar(absensiId, {
-      mapel,
-      kelas,
-      jam,
-      waktu: waktuSekarang(),
-    });
-    if (!hasil)
-      return res
-        .status(404)
-        .json({ error: "Data absen kehadiran tidak ditemukan" });
+
+    let entry;
+    if (tipe === "mengajar") {
+      if (!mapel || !kelas || !jam) {
+        return res.status(400).json({ error: "Data mengajar belum lengkap" });
+      }
+      entry = { tipe: "mengajar", mapel, kelas, jam, waktu: waktuSekarang() };
+    } else if (tipe === "dinas") {
+      if (!tujuan || !keperluan) {
+        return res.status(400).json({ error: "Data dinas belum lengkap" });
+      }
+      entry = { tipe: "dinas", tujuan, keperluan, waktu: waktuSekarang() };
+    } else {
+      return res.status(400).json({ error: "Tipe data tidak dikenali" });
+    }
+
+    const hasil = await tambahMengajar(absensiId, entry);
+    if (!hasil) return res.status(404).json({ error: "Data absen kehadiran tidak ditemukan" });
     res.json({ ok: true, mengajar: hasil.mengajar });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Gagal menyimpan data mengajar" });
+    res.status(500).json({ error: "Gagal menyimpan data" });
   }
 });
 

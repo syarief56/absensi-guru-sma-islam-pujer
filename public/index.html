@@ -42,9 +42,38 @@
           <div class="pilihan-btn status-izin" data-status="Izin">Izin</div>
           <div class="pilihan-btn status-sakit" data-status="Sakit">Sakit</div>
           <div class="pilihan-btn status-alpa" data-status="Alpa">Alpa</div>
-          <div class="pilihan-btn status-dinas" data-status="Dinas Luar">
-            Dinas Luar
-          </div>
+        </div>
+
+        <button class="btn-utama" id="btn-absen" disabled>Kirim absensi</button>
+        <div id="absen-status"></div>
+      </div>
+
+      <!-- Langkah 3: absen mengajar & dinas -->
+      <div class="card" id="kartu-mengajar" style="display: none">
+        <h2>3. Absen mengajar &amp; dinas hari ini</h2>
+        <p style="font-size: 13px; color: var(--teks-lembut); margin: 0 0 10px">
+          Pilih jenis data yang mau ditambahkan. Bisa diisi lebih dari satu
+          kali.
+        </p>
+
+        <div
+          class="pilihan-grid"
+          id="pilihan-tipe-tambahan"
+          style="margin-bottom: 14px"
+        >
+          <div class="pilihan-btn aktif" data-tipe="mengajar">Mengajar</div>
+          <div class="pilihan-btn" data-tipe="dinas">Dinas luar</div>
+        </div>
+
+        <div id="grup-mengajar">
+          <label for="pilih-mapel">Mata pelajaran</label>
+          <select id="pilih-mapel"></select>
+
+          <label for="pilih-kelas">Kelas</label>
+          <select id="pilih-kelas"></select>
+
+          <label for="pilih-jam">Jam ke</label>
+          <select id="pilih-jam"></select>
         </div>
 
         <div id="grup-dinas" style="display: none">
@@ -52,45 +81,18 @@
           <input
             type="text"
             id="input-tujuan-dinas"
-            placeholder="contoh: SMAN 1 Bondowoso"
+            placeholder="contoh: Dinas Pendidikan"
           />
 
           <label for="input-keperluan-dinas">Keperluan</label>
           <input
             type="text"
             id="input-keperluan-dinas"
-            placeholder="contoh: rapat MGMP"
+            placeholder="contoh: mengambil dokumen"
           />
         </div>
 
-        <button class="btn-utama" id="btn-absen" disabled>Kirim absensi</button>
-        <div id="absen-status"></div>
-      </div>
-
-      <!-- Langkah 3: absen mengajar -->
-      <div class="card" id="kartu-mengajar" style="display: none">
-        <h2>3. Absen mengajar hari ini</h2>
-        <p style="font-size: 13px; color: var(--teks-lembut); margin: 0 0 4px">
-          Isi kalau kamu mengajar hari ini. Bisa diisi lebih dari satu kali
-          kalau mengajar beberapa kelas/jam.
-        </p>
-
-        <label for="pilih-mapel">Mata pelajaran</label>
-        <select id="pilih-mapel"></select>
-
-        <div id="grup-kelas">
-          <label for="pilih-kelas">Kelas</label>
-          <select id="pilih-kelas"></select>
-        </div>
-
-        <div id="grup-jam">
-          <label for="pilih-jam">Jam ke</label>
-          <select id="pilih-jam"></select>
-        </div>
-
-        <button class="btn-utama" id="btn-tambah-mengajar">
-          Tambah data mengajar
-        </button>
+        <button class="btn-utama" id="btn-tambah-mengajar">Tambah data</button>
 
         <div id="daftar-mengajar" style="margin-top: 12px"></div>
 
