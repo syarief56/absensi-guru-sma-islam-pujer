@@ -91,7 +91,7 @@ Langkah ringkas deploy ke Render:
 
 ## Catatan lain
 
-- Absensi otomatis ditutup setiap hari Minggu.
+- Absensi dapat dilakukan setiap hari, termasuk hari Minggu.
 - Setiap guru hanya bisa absen kehadiran satu kali per hari.
 - Jarak guru terhadap sekolah dihitung otomatis lewat GPS HP guru (rumus haversine), jadi tidak
   bisa dicurangi dengan mengubah waktu di HP.

@@ -26,12 +26,6 @@ async function muatData() {
   const res = await fetch("/api/guru");
   dataAwal = await res.json();
 
-  if (dataAwal.hariMinggu) {
-    el("kartu-lokasi").innerHTML =
-      '<h2>Absensi tidak dibuka</h2><div class="status-box gagal">Hari ini Minggu. Absensi hanya dibuka Senin sampai Sabtu.</div>';
-    return;
-  }
-
   const selectGuru = el("pilih-guru");
   selectGuru.innerHTML =
     '<option value="">-- Pilih nama --</option>' +

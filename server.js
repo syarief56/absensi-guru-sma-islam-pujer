@@ -109,11 +109,6 @@ app.post("/api/absen", async (req, res) => {
   try {
     const { guruId, status, lat, lng, tujuanDinas, keperluanDinas } = req.body;
 
-    if (hariIniMinggu()) {
-      return res
-        .status(400)
-        .json({ error: "Absensi tidak dibuka pada hari Minggu" });
-    }
     if (!guruId || !status) {
       return res.status(400).json({ error: "Data belum lengkap" });
     }
