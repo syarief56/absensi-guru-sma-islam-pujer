@@ -156,7 +156,20 @@ function siapkanFormMengajar(mapelGuru, kelas, jam) {
   el("pilih-jam").innerHTML = jam
     .map((j) => `<option value="${j}">${j}</option>`)
     .join("");
+  updateTampilanMapel();
 }
+
+function updateTampilanMapel() {
+  const mapel = el("pilih-mapel").value;
+  const tanpaKelasDanJam = (dataAwal.tanpaKelasDanJam || []).includes(mapel);
+  const tanpaKelas = (dataAwal.tanpaKelas || []).includes(mapel);
+
+  el("wrap-kelas").style.display =
+    tanpaKelasDanJam || tanpaKelas ? "none" : "block";
+  el("wrap-jam").style.display = tanpaKelasDanJam ? "none" : "block";
+}
+
+el("pilih-mapel").addEventListener("change", updateTampilanMapel);
 
 document
   .querySelectorAll("#pilihan-tipe-tambahan .pilihan-btn")
@@ -171,6 +184,7 @@ document
       if (tipeTambahanAktif === "mengajar") {
         el("grup-mengajar").style.display = "block";
         el("grup-dinas").style.display = "none";
+        updateTampilanMapel();
       } else {
         el("grup-mengajar").style.display = "none";
         el("grup-dinas").style.display = "block";
@@ -183,13 +197,32 @@ el("btn-tambah-mengajar").addEventListener("click", async () => {
 
   if (tipeTambahanAktif === "mengajar") {
     const mapel = el("pilih-mapel").value;
-    const kelas = el("pilih-kelas").value;
-    const jam = el("pilih-jam").value;
-    if (!mapel || !kelas || !jam) {
-      alert("Lengkapi mapel, kelas, dan jam dulu");
+    if (!mapel) {
+      alert("Pilih mapel dulu");
       return;
     }
-    body = { ...body, mapel, kelas, jam };
+
+    const tanpaKelasDanJam = (dataAwal.tanpaKelasDanJam || []).includes(mapel);
+    const tanpaKelas = (dataAwal.tanpaKelas || []).includes(mapel);
+
+    if (tanpaKelasDanJam) {
+      body = { ...body, mapel };
+    } else if (tanpaKelas) {
+      const jam = el("pilih-jam").value;
+      if (!jam) {
+        alert("Pilih jam dulu");
+        return;
+      }
+      body = { ...body, mapel, jam };
+    } else {
+      const kelas = el("pilih-kelas").value;
+      const jam = el("pilih-jam").value;
+      if (!kelas || !jam) {
+        alert("Lengkapi kelas dan jam dulu");
+        return;
+      }
+      body = { ...body, mapel, kelas, jam };
+    }
   } else {
     const tujuan = el("input-tujuan-dinas").value.trim();
     const keperluan = el("input-keperluan-dinas").value.trim();
@@ -219,14 +252,22 @@ el("btn-tambah-mengajar").addEventListener("click", async () => {
   }
 });
 
+function formatMengajarTampil(m) {
+  if (m.tipe === "dinas") {
+    return `Dinas &middot; ${m.tujuan} &middot; ${m.keperluan}`;
+  }
+  if (m.kelas && m.jam) {
+    return `${m.mapel} &middot; ${m.kelas} &middot; jam ${m.jam}`;
+  }
+  if (m.jam) {
+    return `${m.mapel} &middot; jam ${m.jam}`;
+  }
+  return `${m.mapel}`;
+}
+
 function renderDaftarMengajar() {
   el("daftar-mengajar").innerHTML = daftarMengajarTampil
-    .map((m) => {
-      if (m.tipe === "dinas") {
-        return `<span class="tag-mengajar">Dinas &middot; ${m.tujuan} &middot; ${m.keperluan}</span>`;
-      }
-      return `<span class="tag-mengajar">${m.mapel} &middot; ${m.kelas} &middot; jam ${m.jam}</span>`;
-    })
+    .map((m) => `<span class="tag-mengajar">${formatMengajarTampil(m)}</span>`)
     .join("");
 }
 
@@ -246,11 +287,7 @@ function tampilkanSelesai() {
     ringkasan +=
       `<br/><b>Data tambahan:</b><br/>` +
       daftarMengajarTampil
-        .map((m) =>
-          m.tipe === "dinas"
-            ? `- Dinas: ${m.tujuan} (${m.keperluan})`
-            : `- ${m.mapel} kelas ${m.kelas} jam ${m.jam}`,
-        )
+        .map((m) => `- ${formatMengajarTampil(m).replace(/&middot;/g, "·")}`)
         .join("<br/>");
   }
   el("ringkasan-akhir").innerHTML = ringkasan;

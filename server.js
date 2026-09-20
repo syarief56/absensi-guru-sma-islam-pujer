@@ -12,6 +12,7 @@ const {
   getRekap,
   hapusAbsensi,
 } = require("./db");
+const { TANPA_KELAS_DAN_JAM, TANPA_KELAS } = require("./seed-data");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -73,6 +74,13 @@ function wajibAdmin(req, res, next) {
   return res.status(401).json({ error: "Belum login sebagai admin" });
 }
 
+function formatMengajarEntry(m) {
+  if (m.tipe === "dinas") return `Dinas: ${m.tujuan} (${m.keperluan})`;
+  if (m.kelas && m.jam) return `${m.mapel} ${m.kelas} (${m.jam})`;
+  if (m.jam) return `${m.mapel} (${m.jam})`;
+  return `${m.mapel}`;
+}
+
 // ---------- API untuk halaman absen ----------
 
 app.get("/api/guru", (req, res) => {
@@ -92,6 +100,8 @@ app.get("/api/guru", (req, res) => {
     sekolahLat: SEKOLAH_LAT,
     sekolahLng: SEKOLAH_LNG,
     radiusMeter: RADIUS_METER,
+    tanpaKelasDanJam: TANPA_KELAS_DAN_JAM,
+    tanpaKelas: TANPA_KELAS,
   });
 });
 
@@ -178,10 +188,23 @@ app.post("/api/absen-mengajar", async (req, res) => {
 
     let entry;
     if (tipe === "mengajar") {
-      if (!mapel || !kelas || !jam) {
-        return res.status(400).json({ error: "Data mengajar belum lengkap" });
+      if (!mapel) {
+        return res.status(400).json({ error: "Pilih mapel dulu" });
       }
-      entry = { tipe: "mengajar", mapel, kelas, jam, waktu: waktuSekarang() };
+
+      if (TANPA_KELAS_DAN_JAM.includes(mapel)) {
+        entry = { tipe: "mengajar", mapel, waktu: waktuSekarang() };
+      } else if (TANPA_KELAS.includes(mapel)) {
+        if (!jam) {
+          return res.status(400).json({ error: "Pilih jam dulu" });
+        }
+        entry = { tipe: "mengajar", mapel, jam, waktu: waktuSekarang() };
+      } else {
+        if (!kelas || !jam) {
+          return res.status(400).json({ error: "Data mengajar belum lengkap" });
+        }
+        entry = { tipe: "mengajar", mapel, kelas, jam, waktu: waktuSekarang() };
+      }
     } else if (tipe === "dinas") {
       if (!tujuan || !keperluan) {
         return res.status(400).json({ error: "Data dinas belum lengkap" });
@@ -192,7 +215,10 @@ app.post("/api/absen-mengajar", async (req, res) => {
     }
 
     const hasil = await tambahMengajar(absensiId, entry);
-    if (!hasil) return res.status(404).json({ error: "Data absen kehadiran tidak ditemukan" });
+    if (!hasil)
+      return res
+        .status(404)
+        .json({ error: "Data absen kehadiran tidak ditemukan" });
     res.json({ ok: true, mengajar: hasil.mengajar });
   } catch (err) {
     console.error(err);
@@ -247,9 +273,7 @@ app.get("/api/admin/export-csv", wajibAdmin, async (req, res) => {
 
     const baris = ["Tanggal,Waktu,Nama Guru,Status,Jarak (m),Mapel Diajar"];
     data.forEach((a) => {
-      const mapelStr = a.mengajar
-        .map((m) => `${m.mapel} ${m.kelas} (${m.jam})`)
-        .join(" | ");
+      const mapelStr = a.mengajar.map(formatMengajarEntry).join(" | ");
       baris.push(
         [
           a.tanggal,

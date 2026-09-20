@@ -84,4 +84,17 @@ const guruAwal = [
 const kelasAwal = ["X", "XI", "XII"];
 const jamAwal = ["1-2", "3-4", "5-6", "7-8"];
 
-module.exports = { guruAwal, kelasAwal, jamAwal, KOKURIKULER };
+// Mapel yang TIDAK perlu isi kelas maupun jam (langsung tambah & selesai)
+const TANPA_KELAS_DAN_JAM = ["Piket"];
+
+// Mapel yang cukup isi jam saja, TIDAK perlu isi kelas
+const TANPA_KELAS = ["Kokurikuler", "BTQ", "Desain Grafis", "Mengajar DA/DAS"];
+
+module.exports = {
+  guruAwal,
+  kelasAwal,
+  jamAwal,
+  KOKURIKULER,
+  TANPA_KELAS_DAN_JAM,
+  TANPA_KELAS,
+};

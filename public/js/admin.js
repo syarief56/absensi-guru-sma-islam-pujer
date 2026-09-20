@@ -1,5 +1,4 @@
 const el = (id) => document.getElementById(id);
-
 async function cekLogin() {
   const res = await fetch("/api/admin/cek-login");
   const data = await res.json();
@@ -7,7 +6,6 @@ async function cekLogin() {
     tampilkanAdmin();
   }
 }
-
 el("btn-login").addEventListener("click", async () => {
   const password = el("password-admin").value;
   const res = await fetch("/api/admin/login", {
@@ -23,20 +21,16 @@ el("btn-login").addEventListener("click", async () => {
   }
   tampilkanAdmin();
 });
-
 el("btn-logout").addEventListener("click", async () => {
   await fetch("/api/admin/logout", { method: "POST" });
   location.reload();
 });
-
 function tampilkanAdmin() {
   el("area-login").style.display = "none";
   el("area-admin").style.display = "block";
   muatRekap();
 }
-
 el("btn-filter").addEventListener("click", muatRekap);
-
 el("btn-export").addEventListener("click", () => {
   const dari = el("filter-dari").value;
   const sampai = el("filter-sampai").value;
@@ -45,7 +39,6 @@ el("btn-export").addEventListener("click", () => {
   if (sampai) q.set("sampai", sampai);
   window.location.href = "/api/admin/export-csv?" + q.toString();
 });
-
 function badgeStatus(status) {
   const kelas =
     {
@@ -56,7 +49,6 @@ function badgeStatus(status) {
     }[status] || "badge-hadir";
   return `<span class="badge ${kelas}">${status}</span>`;
 }
-
 function kelompokkanPerTanggal(data) {
   const grup = {};
   data.forEach((a) => {
@@ -65,10 +57,21 @@ function kelompokkanPerTanggal(data) {
   });
   return grup;
 }
-
+function formatMengajarEntry(m) {
+  if (m.tipe === "dinas") {
+    return `Dinas: ${m.tujuan} (${m.keperluan})`;
+  }
+  if (m.kelas && m.jam) {
+    return `${m.mapel} ${m.kelas} (jam ${m.jam})`;
+  }
+  if (m.jam) {
+    return `${m.mapel} (jam ${m.jam})`;
+  }
+  return `${m.mapel}`;
+}
 function barisRekap(a) {
   const mengajarStr = a.mengajar.length
-    ? a.mengajar.map((m) => `${m.mapel} ${m.kelas} (jam ${m.jam})`).join(", ")
+    ? a.mengajar.map(formatMengajarEntry).join(", ")
     : "-";
   return `<tr>
     <td>${a.tanggal}</td>
@@ -80,28 +83,22 @@ function barisRekap(a) {
     <td><button class="btn-hapus" data-id="${a.id}">Hapus</button></td>
   </tr>`;
 }
-
 async function muatRekap() {
   const dari = el("filter-dari").value;
   const sampai = el("filter-sampai").value;
   const q = new URLSearchParams();
   if (dari) q.set("dari", dari);
   if (sampai) q.set("sampai", sampai);
-
   const res = await fetch("/api/admin/rekap?" + q.toString());
   const data = await res.json();
-
   const container = el("rekap-container");
-
   if (data.data.length === 0) {
     container.innerHTML =
       '<div class="card" style="text-align:center;color:var(--teks-lembut);">Belum ada data</div>';
     return;
   }
-
   const grup = kelompokkanPerTanggal(data.data);
   const tanggalUrut = Object.keys(grup).sort().reverse();
-
   container.innerHTML = tanggalUrut
     .map((tgl) => {
       const baris = grup[tgl].map(barisRekap).join("");
@@ -128,7 +125,6 @@ async function muatRekap() {
       `;
     })
     .join("");
-
   document.querySelectorAll(".btn-hapus").forEach((btn) => {
     btn.addEventListener("click", async () => {
       if (!confirm("Yakin mau hapus data absensi ini?")) return;
@@ -143,5 +139,4 @@ async function muatRekap() {
     });
   });
 }
-
 cekLogin();
